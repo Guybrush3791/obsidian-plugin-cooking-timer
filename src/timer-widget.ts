@@ -27,6 +27,7 @@ export class TimerWidget extends MarkdownRenderChild {
 	private iconEl!: HTMLElement;
 	private roundEl: HTMLElement | null = null;
 	private timeEl!: HTMLElement;
+	private nextEl: HTMLButtonElement | null = null;
 	private resetEl!: HTMLButtonElement;
 	private lastStatus: TimerStatus | null = null;
 
@@ -55,6 +56,14 @@ export class TimerWidget extends MarkdownRenderChild {
 			this.toggleEl.createSpan({ cls: 'cooking-timer-label', text: this.spec.label });
 		}
 
+		if (this.spec.rounds > 1) {
+			this.nextEl = el.createEl('button', {
+				cls: 'cooking-timer-next',
+				attr: { 'aria-label': 'Next round' },
+			});
+			setIcon(this.nextEl, 'skip-forward');
+		}
+
 		this.resetEl = el.createEl('button', {
 			cls: 'cooking-timer-reset',
 			attr: { 'aria-label': 'Reset timer' },
@@ -67,6 +76,12 @@ export class TimerWidget extends MarkdownRenderChild {
 			unlockAudio();
 			this.store.toggle(this.key);
 		});
+		if (this.nextEl) {
+			this.registerDomEvent(this.nextEl, 'click', (evt) => {
+				evt.preventDefault();
+				this.store.next(this.key);
+			});
+		}
 		this.registerDomEvent(this.resetEl, 'click', (evt) => {
 			evt.preventDefault();
 			this.store.reset(this.key);
@@ -80,6 +95,10 @@ export class TimerWidget extends MarkdownRenderChild {
 		this.timeEl.setText(formatRemaining(this.store.remaining(timer)));
 		this.roundEl?.setText(`${timer.round}/${timer.rounds}`);
 
+		const active = timer.status === 'running' || timer.status === 'paused';
+		// Round changes without a status change, so this sits above the early return.
+		this.nextEl?.toggle(active && timer.round < timer.rounds);
+
 		if (timer.status === this.lastStatus) return;
 		if (this.lastStatus) this.containerEl.removeClass(`is-${this.lastStatus}`);
 		this.containerEl.addClass(`is-${timer.status}`);
@@ -87,6 +106,6 @@ export class TimerWidget extends MarkdownRenderChild {
 
 		setIcon(this.iconEl, TOGGLE_ICON[timer.status]);
 		this.toggleEl.setAttr('aria-label', TOGGLE_LABEL[timer.status]);
-		this.resetEl.toggle(timer.status === 'running' || timer.status === 'paused');
+		this.resetEl.toggle(active);
 	}
 }

@@ -88,6 +88,20 @@ export class TimerStore {
 		this.emit(key);
 	}
 
+	/**
+	 * Manually skip to the start of the next round, keeping running/paused status.
+	 * No alarm: the user triggered it. No-op on the last round.
+	 */
+	next(key: string, now = Date.now()): void {
+		const timer = this.timers.get(key);
+		if (!timer || timer.round >= timer.rounds) return;
+		if (timer.status !== 'running' && timer.status !== 'paused') return;
+		timer.round++;
+		timer.remainingMs = timer.durationMs;
+		if (timer.status === 'running') timer.endsAt = now + timer.durationMs;
+		this.emit(key);
+	}
+
 	reset(key: string): void {
 		const timer = this.timers.get(key);
 		if (!timer) return;

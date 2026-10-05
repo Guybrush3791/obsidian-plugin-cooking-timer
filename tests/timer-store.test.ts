@@ -68,3 +68,28 @@ test('clicking a finished timer dismisses and resets it', () => {
 	assert.equal(timer.round, 1);
 	assert.equal(timer.remainingMs, 15 * MIN);
 });
+
+test('next skips to a fresh round without ringing, and stops at the last round', () => {
+	const { store, timer, alarms } = setup(3);
+	store.toggle('k', 0);
+	store.next('k', 5 * MIN);
+	assert.equal(timer.round, 2);
+	assert.equal(timer.status, 'running');
+	assert.equal(store.remaining(timer, 5 * MIN), 15 * MIN);
+
+	store.toggle('k', 6 * MIN);
+	store.next('k', 7 * MIN);
+	assert.equal(timer.round, 3);
+	assert.equal(timer.status, 'paused');
+	assert.equal(timer.remainingMs, 15 * MIN);
+
+	store.next('k', 8 * MIN);
+	assert.equal(timer.round, 3);
+	assert.equal(alarms.length, 0);
+});
+
+test('next is ignored while idle', () => {
+	const { store, timer } = setup(3);
+	store.next('k', 0);
+	assert.equal(timer.round, 1);
+});

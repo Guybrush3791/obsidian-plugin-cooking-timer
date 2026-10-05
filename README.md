@@ -27,7 +27,7 @@ Visual design is modelled on [Text Block Timer](https://github.com/wth461694678/
 | Paused | orange, ▶ remaining | resume |
 | Done | red, 🔔 pulsing | dismiss (resets) |
 
-The ↺ button next to a running/paused badge resets it. Commands: **Pause all timers**, **Dismiss finished timers**, **Reset all timers**.
+The ↺ button next to a running/paused badge resets it. Multi-round timers also get a ⏭ button that jumps to the start of the next round (no alarm); it's hidden on the last round. Commands: **Pause all timers**, **Dismiss finished timers**, **Reset all timers**.
 
 When a countdown finishes, the alarm plays and a notice stays on screen until dismissed. With **Repeat alarm until dismissed** on (default), it rings again every 10 seconds. Volume and a test button are in settings.
 
