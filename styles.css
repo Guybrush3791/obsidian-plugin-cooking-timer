@@ -1,0 +1,115 @@
+/*
+ * Inline badge modelled on Text Block Timer's "badge" style: tinted background,
+ * 1px tinted border, 3px radius, colour per state. Colours come from theme RGB
+ * variables so light/dark themes adapt; override the --cooking-timer-* tokens to restyle.
+ */
+
+body {
+	--cooking-timer-idle-rgb: var(--color-base-60-rgb, 107, 114, 128);
+	--cooking-timer-running-rgb: var(--color-green-rgb);
+	--cooking-timer-paused-rgb: var(--color-orange-rgb);
+	--cooking-timer-done-rgb: var(--color-red-rgb);
+}
+
+.cooking-timer {
+	--ct-rgb: var(--cooking-timer-idle-rgb);
+	display: inline-flex;
+	align-items: center;
+	gap: 1px;
+	margin: 0 2px;
+	vertical-align: baseline;
+	white-space: nowrap;
+	user-select: none;
+}
+
+.cooking-timer.is-running { --ct-rgb: var(--cooking-timer-running-rgb); }
+.cooking-timer.is-paused { --ct-rgb: var(--cooking-timer-paused-rgb); }
+.cooking-timer.is-done { --ct-rgb: var(--cooking-timer-done-rgb); }
+
+/* Reset Obsidian's default button chrome so the badge sits inline with text. */
+.cooking-timer button {
+	all: unset;
+	box-sizing: border-box;
+	display: inline-flex;
+	align-items: center;
+	cursor: pointer;
+	font: inherit;
+}
+
+.cooking-timer .cooking-timer-toggle {
+	gap: 4px;
+	padding: 0 6px;
+	border-radius: 3px;
+	border: 1px solid rgba(var(--ct-rgb), 0.3);
+	background-color: rgba(var(--ct-rgb), 0.15);
+	color: rgb(var(--ct-rgb));
+	font-family: system-ui, -apple-system, sans-serif;
+	font-size: 0.95em;
+	font-weight: 500;
+	line-height: 1.5;
+	transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.cooking-timer .cooking-timer-toggle:hover,
+.cooking-timer .cooking-timer-reset:hover {
+	background-color: rgba(var(--ct-rgb), 0.25);
+	border-color: rgba(var(--ct-rgb), 0.5);
+}
+
+.cooking-timer .cooking-timer-toggle:focus-visible,
+.cooking-timer .cooking-timer-reset:focus-visible {
+	box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
+}
+
+.cooking-timer-icon,
+.cooking-timer .cooking-timer-reset {
+	display: inline-flex;
+}
+
+.cooking-timer-icon svg,
+.cooking-timer-reset svg {
+	width: 0.9em;
+	height: 0.9em;
+}
+
+.cooking-timer-time {
+	font-variant-numeric: tabular-nums;
+}
+
+.cooking-timer-round {
+	padding: 0 4px;
+	border-radius: 2px;
+	background-color: rgba(var(--ct-rgb), 0.2);
+	font-size: 0.85em;
+	font-variant-numeric: tabular-nums;
+}
+
+.cooking-timer-label {
+	font-weight: 400;
+	color: var(--text-normal);
+}
+
+.cooking-timer .cooking-timer-reset {
+	padding: 0 4px;
+	align-self: stretch;
+	border-radius: 3px;
+	border: 1px solid rgba(var(--ct-rgb), 0.3);
+	background-color: rgba(var(--ct-rgb), 0.08);
+	color: rgb(var(--ct-rgb));
+}
+
+.cooking-timer.is-done .cooking-timer-toggle {
+	animation: cooking-timer-ring 1s ease-in-out infinite;
+}
+
+@keyframes cooking-timer-ring {
+	0%, 100% { background-color: rgba(var(--ct-rgb), 0.15); }
+	50% { background-color: rgba(var(--ct-rgb), 0.4); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.cooking-timer.is-done .cooking-timer-toggle {
+		animation: none;
+		background-color: rgba(var(--ct-rgb), 0.35);
+	}
+}
