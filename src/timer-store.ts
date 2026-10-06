@@ -1,4 +1,8 @@
+// Type-only on purpose: `node --test` can't resolve the extensionless path at runtime.
 import type { TimerSpec } from './duration';
+
+// Step of the −/+ buttons on an adjustable range timer.
+export const ADJUST_STEP_MS = 60_000;
 
 export type TimerStatus = 'idle' | 'running' | 'paused' | 'done';
 
@@ -6,7 +10,10 @@ export interface TimerState {
 	key: string;
 	sourcePath: string;
 	label: string;
+	// Chosen round length; adjustable within [minMs, maxMs] while idle, and kept across resets.
 	durationMs: number;
+	minMs: number;
+	maxMs: number;
 	rounds: number;
 	// 1-based round currently counting down (equals `rounds` once done).
 	round: number;
@@ -45,6 +52,8 @@ export class TimerStore {
 				sourcePath,
 				label: spec.label,
 				durationMs: spec.durationMs,
+				minMs: spec.durationMs,
+				maxMs: spec.maxMs,
 				rounds: spec.rounds,
 				round: 1,
 				status: 'idle',
@@ -99,6 +108,22 @@ export class TimerStore {
 		timer.round++;
 		timer.remainingMs = timer.durationMs;
 		if (timer.status === 'running') timer.endsAt = now + timer.durationMs;
+		this.emit(key);
+	}
+
+	/**
+	 * Move an idle range timer one step (`direction` +1 / -1) along the grid that starts at
+	 * its minimum, clamped to [minMs, maxMs]. Locked once started.
+	 */
+	adjust(key: string, direction: 1 | -1): void {
+		const timer = this.timers.get(key);
+		if (!timer || timer.status !== 'idle') return;
+		const offset = (timer.durationMs - timer.minMs) / ADJUST_STEP_MS;
+		const steps = direction > 0 ? Math.floor(offset) + 1 : Math.ceil(offset) - 1;
+		const next = Math.min(timer.maxMs, Math.max(timer.minMs, timer.minMs + steps * ADJUST_STEP_MS));
+		if (next === timer.durationMs) return;
+		timer.durationMs = next;
+		timer.remainingMs = next;
 		this.emit(key);
 	}
 

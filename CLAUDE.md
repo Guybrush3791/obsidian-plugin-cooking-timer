@@ -19,7 +19,7 @@ node --test tests/timer-store.test.ts                       # one file
 node --test --test-name-pattern="rounds" "tests/**/*.test.ts"   # one test by name
 ```
 
-Tests run on Node's built-in runner with native type stripping (Node ≥ 22.18): no transpile step, so test-reachable code (`src/duration.ts`, `src/timer-store.ts`) must use only erasable TS syntax (no parameter properties, enums, namespaces), must not import `obsidian`, and test imports use explicit `.ts` extensions. `tests/` is excluded from eslint and from `tsconfig.json`.
+Tests run on Node's built-in runner with native type stripping (Node ≥ 22.18): no transpile step, so test-reachable code (`src/duration.ts`, `src/timer-store.ts`) must use only erasable TS syntax (no parameter properties, enums, namespaces), must not import `obsidian`, and test imports use explicit `.ts` extensions. Between test-reachable `src/` files only `import type` is allowed (erased at runtime); a value import of `./duration` fails under `node --test` because the extensionless path doesn't resolve. `tests/` is excluded from eslint and from `tsconfig.json`.
 
 The user prefers to run build/compile themselves — don't run `npm run build`/`dev` unless asked.
 

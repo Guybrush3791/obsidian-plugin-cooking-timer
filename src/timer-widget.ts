@@ -27,6 +27,8 @@ export class TimerWidget extends MarkdownRenderChild {
 	private iconEl!: HTMLElement;
 	private roundEl: HTMLElement | null = null;
 	private timeEl!: HTMLElement;
+	private decEl: HTMLButtonElement | null = null;
+	private incEl: HTMLButtonElement | null = null;
 	private nextEl: HTMLButtonElement | null = null;
 	private resetEl!: HTMLButtonElement;
 	private lastStatus: TimerStatus | null = null;
@@ -46,6 +48,16 @@ export class TimerWidget extends MarkdownRenderChild {
 		const el = this.containerEl;
 		el.addClass('cooking-timer');
 
+		// Range timers (`15-20m`) get −/+ around the badge while idle: `− [▷ 15:00] +`.
+		const adjustable = this.spec.maxMs > this.spec.durationMs;
+		if (adjustable) {
+			this.decEl = el.createEl('button', {
+				cls: 'cooking-timer-adjust cooking-timer-dec',
+				attr: { 'aria-label': 'Decrease duration by 1 minute' },
+			});
+			setIcon(this.decEl, 'minus');
+		}
+
 		this.toggleEl = el.createEl('button', { cls: 'cooking-timer-toggle' });
 		this.iconEl = this.toggleEl.createSpan({ cls: 'cooking-timer-icon' });
 		if (this.spec.rounds > 1) {
@@ -54,6 +66,14 @@ export class TimerWidget extends MarkdownRenderChild {
 		this.timeEl = this.toggleEl.createSpan({ cls: 'cooking-timer-time' });
 		if (this.spec.label) {
 			this.toggleEl.createSpan({ cls: 'cooking-timer-label', text: this.spec.label });
+		}
+
+		if (adjustable) {
+			this.incEl = el.createEl('button', {
+				cls: 'cooking-timer-adjust cooking-timer-inc',
+				attr: { 'aria-label': 'Increase duration by 1 minute' },
+			});
+			setIcon(this.incEl, 'plus');
 		}
 
 		if (this.spec.rounds > 1) {
@@ -76,6 +96,13 @@ export class TimerWidget extends MarkdownRenderChild {
 			unlockAudio();
 			this.store.toggle(this.key);
 		});
+		for (const [btn, direction] of [[this.decEl, -1], [this.incEl, 1]] as const) {
+			if (!btn) continue;
+			this.registerDomEvent(btn, 'click', (evt) => {
+				evt.preventDefault();
+				this.store.adjust(this.key, direction);
+			});
+		}
 		if (this.nextEl) {
 			this.registerDomEvent(this.nextEl, 'click', (evt) => {
 				evt.preventDefault();
@@ -98,6 +125,9 @@ export class TimerWidget extends MarkdownRenderChild {
 		const active = timer.status === 'running' || timer.status === 'paused';
 		// Round changes without a status change, so this sits above the early return.
 		this.nextEl?.toggle(active && timer.round < timer.rounds);
+		// Adjusting changes the duration without a status change, so this also sits above.
+		if (this.decEl) this.decEl.disabled = timer.durationMs <= timer.minMs;
+		if (this.incEl) this.incEl.disabled = timer.durationMs >= timer.maxMs;
 
 		if (timer.status === this.lastStatus) return;
 		if (this.lastStatus) this.containerEl.removeClass(`is-${this.lastStatus}`);
@@ -107,5 +137,7 @@ export class TimerWidget extends MarkdownRenderChild {
 		setIcon(this.iconEl, TOGGLE_ICON[timer.status]);
 		this.toggleEl.setAttr('aria-label', TOGGLE_LABEL[timer.status]);
 		this.resetEl.toggle(active);
+		this.decEl?.toggle(timer.status === 'idle');
+		this.incEl?.toggle(timer.status === 'idle');
 	}
 }

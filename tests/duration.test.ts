@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { formatRemaining, parseDuration, parseTimerSpec } from '../src/duration.ts';
+import {
+	formatRemaining,
+	parseDuration,
+	parseDurationRange,
+	parseTimerSpec,
+} from '../src/duration.ts';
 
 test('parseDuration: unit form', () => {
 	assert.equal(parseDuration('10m'), 600_000);
@@ -24,16 +29,42 @@ test('parseDuration: rejects invalid or zero', () => {
 test('parseTimerSpec: single round with label', () => {
 	assert.deepEqual(parseTimerSpec('timer: 10m Simmer the sauce'), {
 		durationMs: 600_000,
+		maxMs: 600_000,
 		rounds: 1,
 		label: 'Simmer the sauce',
 	});
 });
 
 test('parseTimerSpec: rounds', () => {
-	const expected = { durationMs: 900_000, rounds: 3, label: 'Stir' };
+	const expected = { durationMs: 900_000, maxMs: 900_000, rounds: 3, label: 'Stir' };
 	assert.deepEqual(parseTimerSpec('timer: 3x 15:00 Stir'), expected);
 	assert.deepEqual(parseTimerSpec('timer: 3x15:00 Stir'), expected);
 	assert.deepEqual(parseTimerSpec('Timer: 3 × 15m Stir'), expected);
+});
+
+test('parseDurationRange: single duration and ranges', () => {
+	assert.deepEqual(parseDurationRange('10m'), [600_000, 600_000]);
+	assert.deepEqual(parseDurationRange('15-20m'), [900_000, 1_200_000]);
+	assert.deepEqual(parseDurationRange('15–20m'), [900_000, 1_200_000]);
+	assert.deepEqual(parseDurationRange('15m-20m'), [900_000, 1_200_000]);
+	assert.deepEqual(parseDurationRange('15:00-20:00'), [900_000, 1_200_000]);
+	assert.deepEqual(parseDurationRange('1h-1h30m'), [3_600_000, 5_400_000]);
+	assert.deepEqual(parseDurationRange('30-45s'), [30_000, 45_000]);
+});
+
+test('parseDurationRange: rejects empty or inverted ranges', () => {
+	for (const bad of ['20-15m', '15-15m', '-20m', '15-', '15-20', '15-20-25m', '0-5m']) {
+		assert.equal(parseDurationRange(bad), null, bad);
+	}
+});
+
+test('parseTimerSpec: range with rounds and label', () => {
+	assert.deepEqual(parseTimerSpec('timer: 2x 15-20m Ossa'), {
+		durationMs: 900_000,
+		maxMs: 1_200_000,
+		rounds: 2,
+		label: 'Ossa',
+	});
 });
 
 test('parseTimerSpec: ignores other inline code', () => {

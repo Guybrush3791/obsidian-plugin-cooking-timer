@@ -51,6 +51,7 @@ body {
 }
 
 .cooking-timer .cooking-timer-toggle:hover,
+.cooking-timer .cooking-timer-adjust:hover,
 .cooking-timer .cooking-timer-next:hover,
 .cooking-timer .cooking-timer-reset:hover {
 	background-color: rgba(var(--ct-rgb), 0.25);
@@ -58,18 +59,21 @@ body {
 }
 
 .cooking-timer .cooking-timer-toggle:focus-visible,
+.cooking-timer .cooking-timer-adjust:focus-visible,
 .cooking-timer .cooking-timer-next:focus-visible,
 .cooking-timer .cooking-timer-reset:focus-visible {
 	box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
 }
 
 .cooking-timer-icon,
+.cooking-timer .cooking-timer-adjust,
 .cooking-timer .cooking-timer-next,
 .cooking-timer .cooking-timer-reset {
 	display: inline-flex;
 }
 
 .cooking-timer-icon svg,
+.cooking-timer-adjust svg,
 .cooking-timer-next svg,
 .cooking-timer-reset svg {
 	width: 0.9em;
@@ -93,6 +97,7 @@ body {
 	color: var(--text-normal);
 }
 
+.cooking-timer .cooking-timer-adjust,
 .cooking-timer .cooking-timer-next,
 .cooking-timer .cooking-timer-reset {
 	padding: 0 4px;
@@ -101,6 +106,13 @@ body {
 	border: 1px solid rgba(var(--ct-rgb), 0.3);
 	background-color: rgba(var(--ct-rgb), 0.08);
 	color: rgb(var(--ct-rgb));
+}
+
+/* At the edge of the range (− on the minimum, + on the maximum). */
+.cooking-timer .cooking-timer-adjust:disabled {
+	opacity: 0.35;
+	cursor: default;
+	pointer-events: none;
 }
 
 .cooking-timer.is-done .cooking-timer-toggle {

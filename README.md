@@ -10,11 +10,13 @@ Visual design is modelled on [Text Block Timer](https://github.com/wth461694678/
 1. Bring the water to a boil, add the pasta: `timer: 9m Pasta`
 2. Simmer the ragù: `timer: 2h30m`
 3. Proof the dough, folding between rounds: `timer: 3x 15:00 Stretch & fold`
+4. Roast the bones until browned (15–20 min): `timer: 15-20m`
 ```
 
 `` `timer: [N x] <duration> [label]` ``
 
 - **Duration**: `10m`, `1h30m`, `45s`, `1h5m30s`, or clock form `5:00`, `1:05:00`.
+- **Range** (optional): `15-20m`, `15:00-20:00` or `1h-1h30m` makes the duration adjustable. The badge starts at the lower bound and gets − / + buttons (`− ▶ 15:00 +`) that change it by 1 minute while the timer is idle; − is disabled at the minimum and + at the maximum. Once started, the duration is locked. Resetting keeps the chosen value.
 - **Rounds** (optional): `3x 15:00` runs three 15-minute rounds back to back from a single start. A short chime plays at the end of each round and the next round starts automatically; the final round plays the full alarm.
 - **Label** (optional): shown in the badge and in the notice when the timer rings. Without one, the note name is used.
 
@@ -22,7 +24,7 @@ Visual design is modelled on [Text Block Timer](https://github.com/wth461694678/
 
 | State | Badge | Click |
 | --- | --- | --- |
-| Idle | grey, ▶ full duration | start |
+| Idle | grey, ▶ full duration (− / + for a range) | start |
 | Running | green, ⏸ counting down | pause |
 | Paused | orange, ▶ remaining | resume |
 | Done | red, 🔔 pulsing | dismiss (resets) |
