@@ -2,17 +2,20 @@
  * Inline badge modelled on Text Block Timer's "badge" style: tinted background,
  * 1px tinted border, 3px radius, colour per state. Colours come from theme RGB
  * variables so light/dark themes adapt; override the --cooking-timer-* tokens to restyle.
+ * A running timer fades through the three running tokens as its current round runs down.
  */
 
 body {
 	--cooking-timer-idle-rgb: var(--color-base-60-rgb, 107, 114, 128);
 	--cooking-timer-running-rgb: var(--color-green-rgb);
+	--cooking-timer-running-mid-rgb: var(--color-orange-rgb);
+	--cooking-timer-running-low-rgb: var(--color-red-rgb);
 	--cooking-timer-paused-rgb: var(--color-orange-rgb);
 	--cooking-timer-done-rgb: var(--color-red-rgb);
 }
 
 .cooking-timer {
-	--ct-rgb: var(--cooking-timer-idle-rgb);
+	--ct-color: rgb(var(--cooking-timer-idle-rgb));
 	display: inline-flex;
 	align-items: center;
 	gap: 1px;
@@ -22,9 +25,27 @@ body {
 	user-select: none;
 }
 
-.cooking-timer.is-running { --ct-rgb: var(--cooking-timer-running-rgb); }
-.cooking-timer.is-paused { --ct-rgb: var(--cooking-timer-paused-rgb); }
-.cooking-timer.is-done { --ct-rgb: var(--cooking-timer-done-rgb); }
+.cooking-timer.is-paused { --ct-color: rgb(var(--cooking-timer-paused-rgb)); }
+.cooking-timer.is-done { --ct-color: rgb(var(--cooking-timer-done-rgb)); }
+
+/*
+ * --ct-remaining is the fraction of the round left (1 → 0), set by the widget on each tick.
+ * Pure high above 5/6, pure mid at 1/2, pure low below 1/6, blending linearly in between,
+ * so the 2/3 and 1/3 marks are the halfway points of each fade. oklch keeps the
+ * green → orange fade bright (via yellow) instead of the muddy olive an sRGB mix gives.
+ */
+.cooking-timer.is-running {
+	--ct-upper: color-mix(
+		in oklch,
+		rgb(var(--cooking-timer-running-rgb)) calc(clamp(0, 3 * var(--ct-remaining, 1) - 1.5, 1) * 100%),
+		rgb(var(--cooking-timer-running-mid-rgb))
+	);
+	--ct-color: color-mix(
+		in oklch,
+		var(--ct-upper) calc(clamp(0, 3 * var(--ct-remaining, 1) - 0.5, 1) * 100%),
+		rgb(var(--cooking-timer-running-low-rgb))
+	);
+}
 
 /* Reset Obsidian's default button chrome so the badge sits inline with text. */
 .cooking-timer button {
@@ -40,9 +61,9 @@ body {
 	gap: 4px;
 	padding: 0 6px;
 	border-radius: 3px;
-	border: 1px solid rgba(var(--ct-rgb), 0.3);
-	background-color: rgba(var(--ct-rgb), 0.15);
-	color: rgb(var(--ct-rgb));
+	border: 1px solid color-mix(in srgb, var(--ct-color) 30%, transparent);
+	background-color: color-mix(in srgb, var(--ct-color) 15%, transparent);
+	color: var(--ct-color);
 	font-family: system-ui, -apple-system, sans-serif;
 	font-size: 0.95em;
 	font-weight: 500;
@@ -54,8 +75,8 @@ body {
 .cooking-timer .cooking-timer-adjust:hover,
 .cooking-timer .cooking-timer-next:hover,
 .cooking-timer .cooking-timer-reset:hover {
-	background-color: rgba(var(--ct-rgb), 0.25);
-	border-color: rgba(var(--ct-rgb), 0.5);
+	background-color: color-mix(in srgb, var(--ct-color) 25%, transparent);
+	border-color: color-mix(in srgb, var(--ct-color) 50%, transparent);
 }
 
 .cooking-timer .cooking-timer-toggle:focus-visible,
@@ -87,7 +108,7 @@ body {
 .cooking-timer-round {
 	padding: 0 4px;
 	border-radius: 2px;
-	background-color: rgba(var(--ct-rgb), 0.2);
+	background-color: color-mix(in srgb, var(--ct-color) 20%, transparent);
 	font-size: 0.85em;
 	font-variant-numeric: tabular-nums;
 }
@@ -103,9 +124,9 @@ body {
 	padding: 0 4px;
 	align-self: stretch;
 	border-radius: 3px;
-	border: 1px solid rgba(var(--ct-rgb), 0.3);
-	background-color: rgba(var(--ct-rgb), 0.08);
-	color: rgb(var(--ct-rgb));
+	border: 1px solid color-mix(in srgb, var(--ct-color) 30%, transparent);
+	background-color: color-mix(in srgb, var(--ct-color) 8%, transparent);
+	color: var(--ct-color);
 }
 
 /* At the edge of the range (− on the minimum, + on the maximum). */
@@ -120,13 +141,13 @@ body {
 }
 
 @keyframes cooking-timer-ring {
-	0%, 100% { background-color: rgba(var(--ct-rgb), 0.15); }
-	50% { background-color: rgba(var(--ct-rgb), 0.4); }
+	0%, 100% { background-color: color-mix(in srgb, var(--ct-color) 15%, transparent); }
+	50% { background-color: color-mix(in srgb, var(--ct-color) 40%, transparent); }
 }
 
 @media (prefers-reduced-motion: reduce) {
 	.cooking-timer.is-done .cooking-timer-toggle {
 		animation: none;
-		background-color: rgba(var(--ct-rgb), 0.35);
+		background-color: color-mix(in srgb, var(--ct-color) 35%, transparent);
 	}
 }

@@ -33,7 +33,7 @@ State is deliberately separated from the DOM, because reading view destroys and 
 - `src/duration.ts` — pure parsing/formatting; `TIMER_KEYWORD` and the spec regex live here.
 - `src/alarm.ts` — Web Audio synthesized beeps (no assets). `unlockAudio()` must be called from a user gesture (the widget's start click) or mobile webviews keep the `AudioContext` suspended and the alarm is silent.
 - `src/main.ts` — lifecycle, notices (final notice is persistent and auto-hides when the timer leaves `done`), repeat-alarm interval, commands.
-- `styles.css` — per-state colour via a single `--ct-rgb` variable derived from Obsidian theme RGB vars; buttons use `all: unset` to sit inline in text.
+- `styles.css` — per-state colour via a single `--ct-color` (alpha tints via `color-mix`) derived from Obsidian theme RGB vars; a running badge fades green → orange → red from `--ct-remaining`, which the widget sets each render; buttons use `all: unset` to sit inline in text.
 
 Known scope limits: reading view only (Live Preview would need a CodeMirror 6 `ViewPlugin`/`Decoration.replace` widget, as Text Block Timer does); timer state is in memory only and lost on reload.
 

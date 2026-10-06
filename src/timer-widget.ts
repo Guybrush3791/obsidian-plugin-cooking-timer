@@ -119,7 +119,11 @@ export class TimerWidget extends MarkdownRenderChild {
 
 	private render(): void {
 		const timer = this.timer;
-		this.timeEl.setText(formatRemaining(this.store.remaining(timer)));
+		const remaining = this.store.remaining(timer);
+		this.timeEl.setText(formatRemaining(remaining));
+		// Drives the running badge's green → orange → red fade (see styles.css).
+		const fraction = timer.durationMs > 0 ? remaining / timer.durationMs : 0;
+		this.containerEl.setCssProps({ '--ct-remaining': fraction.toFixed(3) });
 		this.roundEl?.setText(`${timer.round}/${timer.rounds}`);
 
 		const active = timer.status === 'running' || timer.status === 'paused';
