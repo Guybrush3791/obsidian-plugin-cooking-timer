@@ -65,3 +65,31 @@ export function setDoneValue(
 	lines.splice(lineStart, lineEnd - lineStart + 1, ...updated.split('\n'));
 	return lines.join('\n');
 }
+
+// Opening/closing line of a fenced code block, whose contents are never rendered as checkboxes.
+const FENCE_RE = /^\s*(`{3,}|~{3,})/;
+
+/**
+ * Sets every `done:` span in `source` back to `done: unchecked`, leaving fenced code blocks
+ * alone. Returns the new text and how many spans changed.
+ */
+export function uncheckAll(source: string): { text: string; count: number } {
+	let count = 0;
+	let fence: string | null = null;
+	const lines = source.split('\n').map((line) => {
+		const marker = FENCE_RE.exec(line)?.[1];
+		if (marker) {
+			if (fence === null) fence = marker;
+			else if (marker[0] === fence[0] && marker.length >= fence.length) fence = null;
+			return line;
+		}
+		if (fence !== null) return line;
+		return line.replace(CODE_SPAN_RE, (span, inner: string) => {
+			if (!parseDoneSpec(inner)?.checked) return span;
+			count++;
+			const keyword = inner.trim().slice(0, DONE_KEYWORD.length);
+			return `\`${keyword}: ${DONE_UNCHECKED}\``;
+		});
+	});
+	return { text: lines.join('\n'), count };
+}

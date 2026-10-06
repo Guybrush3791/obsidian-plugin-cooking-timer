@@ -27,7 +27,7 @@ Visual design is modelled on [Text Block Timer](https://github.com/wth461694678/
 - Preheat the oven `done: unchecked`
 ```
 
-`` `done: unchecked` `` becomes an empty checkbox in reading view, inline in text, list items and headings. Checking it writes the time into the note — `` `done: 13.46` `` — and the box then shows as checked with that time next to it. Unchecking writes `done: unchecked` back. Since the state lives in the note, it survives restarts and syncs like any other text.
+`` `done: unchecked` `` becomes an empty checkbox in reading view, inline in text, list items and headings. Checking it writes the time into the note — `` `done: 13.46` `` — and the box then shows as checked with that time next to it. Unchecking writes `done: unchecked` back. The **Uncheck all done checkboxes in current file** command resets every one in the active note at once. Since the state lives in the note, it survives restarts and syncs like any other text.
 
 ## Controls (reading view)
 

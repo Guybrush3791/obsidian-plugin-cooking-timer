@@ -1,5 +1,6 @@
-import { Notice, Plugin } from 'obsidian';
+import { Notice, Plugin, TFile } from 'obsidian';
 import { closeAudio, playAlarm } from './alarm';
+import { uncheckAll } from './done';
 import { createTimerPostProcessor } from './post-processor';
 import { CookingTimerSettingTab, CookingTimerSettings, DEFAULT_SETTINGS } from './settings';
 import { TimerStore, type TimerState } from './timer-store';
@@ -40,12 +41,32 @@ export default class CookingTimerPlugin extends Plugin {
 			name: 'Reset all timers',
 			callback: () => this.store.resetAll(),
 		});
+		this.addCommand({
+			id: 'uncheck-all-done',
+			name: 'Uncheck all done checkboxes in current file',
+			checkCallback: (checking) => {
+				const file = this.app.workspace.getActiveFile();
+				if (file?.extension !== 'md') return false;
+				if (!checking) void this.uncheckAllIn(file);
+				return true;
+			},
+		});
 
 		this.addSettingTab(new CookingTimerSettingTab(this.app, this));
 	}
 
 	onunload() {
 		closeAudio();
+	}
+
+	private async uncheckAllIn(file: TFile) {
+		let count = 0;
+		await this.app.vault.process(file, (data) => {
+			const result = uncheckAll(data);
+			count = result.count;
+			return result.text;
+		});
+		new Notice(count ? `Unchecked ${count} done checkbox${count === 1 ? '' : 'es'}` : 'No checked done checkboxes');
 	}
 
 	private onAlarm(timer: TimerState, final: boolean) {

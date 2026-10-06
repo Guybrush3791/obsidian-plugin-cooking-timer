@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { formatCheckTime, parseDoneSpec, setDoneValue } from '../src/done.ts';
+import { formatCheckTime, parseDoneSpec, setDoneValue, uncheckAll } from '../src/done.ts';
 
 test('parseDoneSpec: unchecked', () => {
 	assert.deepEqual(parseDoneSpec('done: unchecked'), { checked: false, checkedAt: '' });
@@ -51,4 +51,27 @@ test('setDoneValue: refuses when the note changed', () => {
 	assert.equal(setDoneValue(NOTE, 2, 2, 0, 'done: 10.00', '13.46'), null);
 	assert.equal(setDoneValue(NOTE, 2, 2, 1, 'done: unchecked', '13.46'), null);
 	assert.equal(setDoneValue(NOTE, 9, 9, 0, 'done: unchecked', '13.46'), null);
+});
+
+test('uncheckAll: unchecks every checked span outside code blocks', () => {
+	const source = [
+		'## Step `done: 13.46`',
+		'Mix `Done: 09.10` and `done: unchecked` `timer: 5m`',
+		'```',
+		'`done: 10.00`',
+		'```',
+	].join('\n');
+	const { text, count } = uncheckAll(source);
+	assert.equal(count, 2);
+	assert.deepEqual(text.split('\n'), [
+		'## Step `done: unchecked`',
+		'Mix `Done: unchecked` and `done: unchecked` `timer: 5m`',
+		'```',
+		'`done: 10.00`',
+		'```',
+	]);
+});
+
+test('uncheckAll: no change when nothing is checked', () => {
+	assert.deepEqual(uncheckAll('`done: unchecked`'), { text: '`done: unchecked`', count: 0 });
 });
