@@ -1,6 +1,6 @@
 {
 	"name": "cooking-timer",
-	"version": "1.0.1",
+	"version": "1.1.0",
 	"description": "Inline cooking countdowns for Obsidian recipes",
 	"main": "main.js",
 	"type": "module",
