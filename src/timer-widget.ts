@@ -25,6 +25,7 @@ export class TimerWidget extends MarkdownRenderChild {
 	private timer: TimerState;
 	private toggleEl!: HTMLButtonElement;
 	private iconEl!: HTMLElement;
+	private totalEl: HTMLElement | null = null;
 	private roundEl: HTMLElement | null = null;
 	private timeEl!: HTMLElement;
 	private decEl: HTMLButtonElement | null = null;
@@ -48,8 +49,8 @@ export class TimerWidget extends MarkdownRenderChild {
 		const el = this.containerEl;
 		el.addClass('cooking-timer');
 
-		// Range timers (`15-20m`) get −/+ around the badge while idle: `− [▷ 15:00] +`.
-		const adjustable = this.spec.maxMs > this.spec.durationMs;
+		// Adjustable timers (`15m -3m`) get −/+ around the badge while idle: `− [▷ 15:00] +`.
+		const adjustable = this.spec.maxMs > this.spec.minMs;
 		if (adjustable) {
 			this.decEl = el.createEl('button', {
 				cls: 'cooking-timer-adjust cooking-timer-dec',
@@ -60,7 +61,9 @@ export class TimerWidget extends MarkdownRenderChild {
 
 		this.toggleEl = el.createEl('button', { cls: 'cooking-timer-toggle' });
 		this.iconEl = this.toggleEl.createSpan({ cls: 'cooking-timer-icon' });
+		// Multi-round timers show the overall countdown before the round's: `⏸ 41:32 1/3 11:32`.
 		if (this.spec.rounds > 1) {
+			this.totalEl = this.toggleEl.createSpan({ cls: 'cooking-timer-total' });
 			this.roundEl = this.toggleEl.createSpan({ cls: 'cooking-timer-round' });
 		}
 		this.timeEl = this.toggleEl.createSpan({ cls: 'cooking-timer-time' });
@@ -119,11 +122,20 @@ export class TimerWidget extends MarkdownRenderChild {
 
 	private render(): void {
 		const timer = this.timer;
-		const remaining = this.store.remaining(timer);
+		// One clock reading for both countdowns so they never disagree by a tick.
+		const now = Date.now();
+		const remaining = this.store.remaining(timer, now);
 		this.timeEl.setText(formatRemaining(remaining));
 		// Drives the running badge's green → orange → red fade (see styles.css).
-		const fraction = timer.durationMs > 0 ? remaining / timer.durationMs : 0;
-		this.containerEl.setCssProps({ '--ct-remaining': fraction.toFixed(3) });
+		this.containerEl.setCssProps({ '--ct-remaining': fractionLeft(remaining, timer.durationMs) });
+		if (this.totalEl) {
+			// The total fades on its own fraction, independently of the current round's.
+			const total = this.store.totalRemaining(timer, now);
+			this.totalEl.setText(formatRemaining(total));
+			this.totalEl.setCssProps({
+				'--ct-remaining': fractionLeft(total, timer.durationMs * timer.rounds),
+			});
+		}
 		this.roundEl?.setText(`${timer.round}/${timer.rounds}`);
 
 		const active = timer.status === 'running' || timer.status === 'paused';
@@ -144,4 +156,8 @@ export class TimerWidget extends MarkdownRenderChild {
 		this.decEl?.toggle(timer.status === 'idle');
 		this.incEl?.toggle(timer.status === 'idle');
 	}
+}
+
+function fractionLeft(remainingMs: number, totalMs: number): string {
+	return (totalMs > 0 ? remainingMs / totalMs : 0).toFixed(3);
 }

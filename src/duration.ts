@@ -3,9 +3,10 @@
 export const TIMER_KEYWORD = 'timer';
 
 export interface TimerSpec {
-	// Starting duration; for an adjustable `15-20m` range, the lower bound.
+	// Starting duration; for an adjustable `15m -3m`, the stated one (15m).
 	durationMs: number;
-	// Upper bound of an adjustable range; equals `durationMs` for a fixed timer.
+	// Bounds of an adjustable timer (`15m -3m` → 12m..15m); both equal `durationMs` for a fixed one.
+	minMs: number;
 	maxMs: number;
 	// How many back-to-back rounds one start runs (`3x 15:00` → 3).
 	rounds: number;
@@ -16,11 +17,11 @@ export interface TimerSpec {
 const UNIT_RE = /^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/i;
 // `5:00`, `1:05:00`
 const CLOCK_RE = /^(?:(\d+):)?(\d{1,2}):(\d{2})$/;
-// `15-20m`, `15:00-20:00`, `1h-1h30m` (en dash accepted too, as in prose `15–20 min`)
-const RANGE_RE = /^([^-–]+)[-–]([^-–]+)$/;
-// `timer: 10m Simmer`, `timer: 3x 15:00 Stir`, `timer: 3x15m`
+// `timer: 10m Simmer`, `timer: 3x 15:00 Stir`, `timer: 3x15m`, `timer: 15m -3m Roast`.
+// The variation is a sign (`-`, `+`, `±`; en dash and minus sign count as `-`) and a duration
+// starting with a digit, so a label like `- stir well` isn't mistaken for one.
 const SPEC_RE = new RegExp(
-	`^${TIMER_KEYWORD}:\\s*(?:(\\d+)\\s*[x×]\\s*)?(\\S+)(?:\\s+(.+))?$`,
+	`^${TIMER_KEYWORD}:\\s*(?:(\\d+)\\s*[x×]\\s*)?(\\S+?)(?:\\s*([-–−+±])\\s*(\\d\\S*))?(?:\\s+(.+))?$`,
 	'i',
 );
 
@@ -40,30 +41,25 @@ export function parseDuration(text: string): number | null {
 	return null;
 }
 
-/** A single duration (`10m`) or an adjustable range (`15-20m`) as [min, max]. */
-export function parseDurationRange(text: string): [number, number] | null {
-	const range = RANGE_RE.exec(text);
-	if (!range?.[1] || !range[2]) {
-		const ms = parseDuration(text);
-		return ms === null ? null : [ms, ms];
-	}
-	const hi = range[2];
-	// A bare lower number borrows the upper bound's trailing unit: `15-20m` → `15m`.
-	const lo = /^\d+$/.test(range[1]) && /[hms]$/i.test(hi) ? range[1] + hi.slice(-1) : range[1];
-	const minMs = parseDuration(lo);
-	const maxMs = parseDuration(hi);
-	if (minMs === null || maxMs === null || minMs >= maxMs) return null;
-	return [minMs, maxMs];
-}
-
 export function parseTimerSpec(code: string): TimerSpec | null {
 	const match = SPEC_RE.exec(code.trim());
 	if (!match?.[2]) return null;
-	const range = parseDurationRange(match[2]);
-	if (range === null) return null;
+	const durationMs = parseDuration(match[2]);
+	if (durationMs === null) return null;
 	const rounds = match[1] === undefined ? 1 : num(match[1]);
 	if (rounds < 1) return null;
-	return { durationMs: range[0], maxMs: range[1], rounds, label: match[3]?.trim() ?? '' };
+
+	let minMs = durationMs;
+	let maxMs = durationMs;
+	const sign = match[3];
+	if (sign && match[4]) {
+		const deltaMs = parseDuration(match[4]);
+		if (deltaMs === null) return null;
+		if (sign !== '+') minMs -= deltaMs;
+		if (sign === '+' || sign === '±') maxMs += deltaMs;
+		if (minMs <= 0) return null;
+	}
+	return { durationMs, minMs, maxMs, rounds, label: match[5]?.trim() ?? '' };
 }
 
 // Rounds up so the display hits 00:00 exactly when the timer finishes.

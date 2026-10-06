@@ -10,14 +10,14 @@ Visual design is modelled on [Text Block Timer](https://github.com/wth461694678/
 1. Bring the water to a boil, add the pasta: `timer: 9m Pasta`
 2. Simmer the ragù: `timer: 2h30m`
 3. Proof the dough, folding between rounds: `timer: 3x 15:00 Stretch & fold`
-4. Roast the bones until browned (15–20 min): `timer: 15-20m`
+4. Roast the bones until browned (12–15 min): `timer: 15m -3m`
 ```
 
-`` `timer: [N x] <duration> [label]` ``
+`` `timer: [N x] <duration> [±variation] [label]` ``
 
 - **Duration**: `10m`, `1h30m`, `45s`, `1h5m30s`, or clock form `5:00`, `1:05:00`.
-- **Range** (optional): `15-20m`, `15:00-20:00` or `1h-1h30m` makes the duration adjustable. The badge starts at the lower bound and gets − / + buttons (`− ▶ 15:00 +`) that change it by 1 minute while the timer is idle; − is disabled at the minimum and + at the maximum. Once started, the duration is locked. Resetting keeps the chosen value.
-- **Rounds** (optional): `3x 15:00` runs three 15-minute rounds back to back from a single start. A short chime plays at the end of each round and the next round starts automatically; the final round plays the full alarm.
+- **Variation** (optional): a sign and a duration after the main one makes it adjustable. `15m -3m` allows 12–15 min, `15m +5m` allows 15–20 min, `15m ±2m` allows 13–17 min (`15:00 -3:00` works too). The badge starts at the written duration and gets − / + buttons (`− ▶ 15:00 +`) that change it by 1 minute while the timer is idle; − is disabled at the minimum and + at the maximum. Once started, the duration is locked. Resetting keeps the chosen value.
+- **Rounds** (optional): `3x 15:00` runs three 15-minute rounds back to back from a single start. The badge shows the time left overall before the current round (`⏸ 41:32 1/3 11:32`); each countdown fades green → orange → red on its own share of time left. A short chime plays at the end of each round and the next round starts automatically, with both countdowns still running; the final round plays the full alarm.
 - **Label** (optional): shown in the badge and in the notice when the timer rings. Without one, the note name is used.
 
 ## Controls (reading view)

@@ -1,7 +1,7 @@
 // Type-only on purpose: `node --test` can't resolve the extensionless path at runtime.
 import type { TimerSpec } from './duration';
 
-// Step of the −/+ buttons on an adjustable range timer.
+// Step of the −/+ buttons on an adjustable timer.
 export const ADJUST_STEP_MS = 60_000;
 
 export type TimerStatus = 'idle' | 'running' | 'paused' | 'done';
@@ -12,6 +12,8 @@ export interface TimerState {
 	label: string;
 	// Chosen round length; adjustable within [minMs, maxMs] while idle, and kept across resets.
 	durationMs: number;
+	// The duration as written (`15m` in `15m -3m`): the −/+ grid is anchored on it.
+	baseMs: number;
 	minMs: number;
 	maxMs: number;
 	rounds: number;
@@ -52,7 +54,8 @@ export class TimerStore {
 				sourcePath,
 				label: spec.label,
 				durationMs: spec.durationMs,
-				minMs: spec.durationMs,
+				baseMs: spec.durationMs,
+				minMs: spec.minMs,
 				maxMs: spec.maxMs,
 				rounds: spec.rounds,
 				round: 1,
@@ -73,6 +76,11 @@ export class TimerStore {
 		return timer.status === 'running' && timer.endsAt !== null
 			? Math.max(0, timer.endsAt - now)
 			: timer.remainingMs;
+	}
+
+	/** Time left across all rounds: the current round plus every round still to come. */
+	totalRemaining(timer: TimerState, now = Date.now()): number {
+		return this.remaining(timer, now) + (timer.rounds - timer.round) * timer.durationMs;
 	}
 
 	/** Start / pause / resume. On a finished timer this acknowledges and resets it. */
@@ -112,15 +120,15 @@ export class TimerStore {
 	}
 
 	/**
-	 * Move an idle range timer one step (`direction` +1 / -1) along the grid that starts at
-	 * its minimum, clamped to [minMs, maxMs]. Locked once started.
+	 * Move an idle adjustable timer one step (`direction` +1 / -1) along the grid anchored on
+	 * its written duration, clamped to [minMs, maxMs]. Locked once started.
 	 */
 	adjust(key: string, direction: 1 | -1): void {
 		const timer = this.timers.get(key);
 		if (!timer || timer.status !== 'idle') return;
-		const offset = (timer.durationMs - timer.minMs) / ADJUST_STEP_MS;
+		const offset = (timer.durationMs - timer.baseMs) / ADJUST_STEP_MS;
 		const steps = direction > 0 ? Math.floor(offset) + 1 : Math.ceil(offset) - 1;
-		const next = Math.min(timer.maxMs, Math.max(timer.minMs, timer.minMs + steps * ADJUST_STEP_MS));
+		const next = Math.min(timer.maxMs, Math.max(timer.minMs, timer.baseMs + steps * ADJUST_STEP_MS));
 		if (next === timer.durationMs) return;
 		timer.durationMs = next;
 		timer.remainingMs = next;
