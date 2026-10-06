@@ -23,11 +23,17 @@ Visual design is modelled on [Text Block Timer](https://github.com/wth461694678/
 ### Checkboxes
 
 ```markdown
-## Fase 1 ~ prepare the dough `done: unchecked`
-- Preheat the oven `done: unchecked`
+## `done: unchecked Fase 1 ~ prepare the dough`
+- `done: unchecked Preheat the oven`
+- Mix the flour `done: unchecked`
 ```
 
-`` `done: unchecked` `` becomes an empty checkbox in reading view, inline in text, list items and headings. Checking it writes the time into the note — `` `done: 13.46` `` — and the box then shows as checked with that time next to it. Unchecking writes `done: unchecked` back. The **Uncheck all done checkboxes in current file** command resets every one in the active note at once. Since the state lives in the note, it survives restarts and syncs like any other text.
+`` `done: [state] [label]` ``
+
+- **State**: `unchecked`, or the time it was checked (`13.46`). Leave it out and the box starts unchecked.
+- **Label** (optional): shown next to the box in the same style as the text around it (a label in a heading looks like the rest of the heading), and struck through once checked.
+
+In reading view, the span becomes `☐ label`, and once checked `☑ ~~label~~ 13.46`. Checking it writes the time into the note (`` `done: 13.46 Preheat the oven` ``); unchecking writes `unchecked` back. The **Uncheck all done checkboxes in current file** command resets every one in the active note at once. Since the state lives in the note, it survives restarts and syncs like any other text.
 
 ## Controls (reading view)
 

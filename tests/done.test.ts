@@ -3,13 +3,28 @@ import { test } from 'node:test';
 import { formatCheckTime, parseDoneSpec, setDoneValue, uncheckAll } from '../src/done.ts';
 
 test('parseDoneSpec: unchecked', () => {
-	assert.deepEqual(parseDoneSpec('done: unchecked'), { checked: false, checkedAt: '' });
-	assert.deepEqual(parseDoneSpec('Done:Unchecked'), { checked: false, checkedAt: '' });
-	assert.deepEqual(parseDoneSpec('done:'), { checked: false, checkedAt: '' });
+	assert.deepEqual(parseDoneSpec('done: unchecked'), { checked: false, checkedAt: '', label: '' });
+	assert.deepEqual(parseDoneSpec('Done:Unchecked'), { checked: false, checkedAt: '', label: '' });
+	assert.deepEqual(parseDoneSpec('done:'), { checked: false, checkedAt: '', label: '' });
 });
 
 test('parseDoneSpec: checked keeps the written time', () => {
-	assert.deepEqual(parseDoneSpec('done: 13.46'), { checked: true, checkedAt: '13.46' });
+	assert.deepEqual(parseDoneSpec('done: 13.46'), { checked: true, checkedAt: '13.46', label: '' });
+});
+
+test('parseDoneSpec: label after the state', () => {
+	assert.deepEqual(parseDoneSpec('done: unchecked Knead the dough'), {
+		checked: false,
+		checkedAt: '',
+		label: 'Knead the dough',
+	});
+	assert.deepEqual(parseDoneSpec('done: 13.46 Knead'), { checked: true, checkedAt: '13.46', label: 'Knead' });
+});
+
+test('parseDoneSpec: a bare label is unchecked, not a time', () => {
+	assert.deepEqual(parseDoneSpec('done: Knead'), { checked: false, checkedAt: '', label: 'Knead' });
+	assert.deepEqual(parseDoneSpec('done: uncheckedish'), { checked: false, checkedAt: '', label: 'uncheckedish' });
+	assert.deepEqual(parseDoneSpec('done: 3 eggs'), { checked: false, checkedAt: '', label: '3 eggs' });
 });
 
 test('parseDoneSpec: rejects other code', () => {
@@ -40,6 +55,13 @@ test('setDoneValue: checks a heading span', () => {
 test('setDoneValue: targets the n-th done span, skipping other code', () => {
 	const out = setDoneValue(NOTE, 4, 4, 1, 'done: 09.10', 'unchecked');
 	assert.equal(out?.split('\n')[4], 'Mix `done: unchecked` then rest `timer: 5m` and `done: unchecked`');
+});
+
+test('setDoneValue: keeps the label', () => {
+	const checked = setDoneValue('`done: unchecked Knead`', 0, 0, 0, 'done: unchecked Knead', '13.46');
+	assert.equal(checked, '`done: 13.46 Knead`');
+	assert.equal(setDoneValue(checked!, 0, 0, 0, 'done: 13.46 Knead', 'unchecked'), '`done: unchecked Knead`');
+	assert.deepEqual(uncheckAll('`done: 13.46 Knead`'), { text: '`done: unchecked Knead`', count: 1 });
 });
 
 test('setDoneValue: keeps the keyword casing', () => {

@@ -1,7 +1,7 @@
 {
 	"id": "cooking-timer",
 	"name": "Cooking Timer",
-	"version": "2.6.0",
+	"version": "2.7.0",
 	"minAppVersion": "1.8.7",
 	"description": "Turn inline code like `timer: 10m Simmer` into a countdown you can start, pause and reset while reading a recipe.",
 	"author": "Guybrush1973",

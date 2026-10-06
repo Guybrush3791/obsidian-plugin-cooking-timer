@@ -31,6 +31,11 @@ export class DoneWidget extends MarkdownRenderChild {
 			attr: { 'aria-label': this.spec.checked ? 'Mark as not done' : 'Mark as done' },
 		});
 		checkbox.checked = this.spec.checked;
+		// `[ ] Knead` / `[x] Knead 13.46`. The label inherits the surrounding text's style
+		// (a heading's label looks like the rest of the heading) and is struck through once checked.
+		if (this.spec.label) {
+			el.createSpan({ cls: 'cooking-timer-done-label', text: this.spec.label });
+		}
 		if (this.spec.checked) {
 			el.createSpan({ cls: 'cooking-timer-done-time', text: this.spec.checkedAt });
 		}

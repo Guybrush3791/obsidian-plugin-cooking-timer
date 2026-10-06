@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Obsidian community plugin (id `cooking-timer`, scaffolded from `obsidianmd/obsidian-sample-plugin`). Inline code spans like `` `timer: 3x 15:00 Stir` `` in a recipe become countdown badges in **reading view** that the user can start/pause/reset; `` `done: unchecked` `` spans become checkboxes that write the check time back into the note (`` `done: 13.46` ``). Visual design follows the Text Block Timer plugin's inline "badge" style (github.com/wth461694678/text-block-timer), reframed for countdowns.
+Obsidian community plugin (id `cooking-timer`, scaffolded from `obsidianmd/obsidian-sample-plugin`). Inline code spans like `` `timer: 3x 15:00 Stir` `` in a recipe become countdown badges in **reading view** that the user can start/pause/reset; `` `done: unchecked` `` spans become checkboxes (with an optional label, struck through when checked) that write the check time back into the note (`` `done: 13.46 Knead` ``). Visual design follows the Text Block Timer plugin's inline "badge" style (github.com/wth461694678/text-block-timer), reframed for countdowns.
 
 ## Commands
 

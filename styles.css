@@ -164,7 +164,10 @@ body {
 	}
 }
 
-/* `done:` checkbox: Obsidian's own checkbox style, sitting inline in text and headings. */
+/*
+ * `done:` checkbox: Obsidian's own checkbox style, sitting inline in text and headings.
+ * The label sets no font of its own so it reads as part of the line (an h2 label looks like h2).
+ */
 .cooking-timer-done {
 	display: inline-flex;
 	align-items: center;
@@ -177,6 +180,10 @@ body {
 .cooking-timer-done .cooking-timer-done-checkbox {
 	margin: 0;
 	cursor: pointer;
+}
+
+.cooking-timer-done.is-checked .cooking-timer-done-label {
+	text-decoration: line-through;
 }
 
 .cooking-timer-done-time {
