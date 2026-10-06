@@ -15,7 +15,7 @@ export default class CookingTimerPlugin extends Plugin {
 		await this.loadSettings();
 
 		this.store = new TimerStore((timer, final) => this.onAlarm(timer, final));
-		this.registerMarkdownPostProcessor(createTimerPostProcessor(this.store));
+		this.registerMarkdownPostProcessor(createTimerPostProcessor(this.app, this.store));
 		this.registerInterval(window.setInterval(() => this.store.tick(), TICK_MS));
 		this.registerInterval(
 			window.setInterval(() => {

@@ -20,6 +20,15 @@ Visual design is modelled on [Text Block Timer](https://github.com/wth461694678/
 - **Rounds** (optional): `3x 15:00` runs three 15-minute rounds back to back from a single start. The badge shows the time left overall before the current round (`⏸ 41:32 1/3 11:32`); each countdown fades green → orange → red on its own share of time left. A short chime plays at the end of each round and the next round starts automatically, with both countdowns still running; the final round plays the full alarm.
 - **Label** (optional): shown in the badge and in the notice when the timer rings. Without one, the note name is used.
 
+### Checkboxes
+
+```markdown
+## Fase 1 ~ prepare the dough `done: unchecked`
+- Preheat the oven `done: unchecked`
+```
+
+`` `done: unchecked` `` becomes an empty checkbox in reading view, inline in text, list items and headings. Checking it writes the time into the note — `` `done: 13.46` `` — and the box then shows as checked with that time next to it. Unchecking writes `done: unchecked` back. Since the state lives in the note, it survives restarts and syncs like any other text.
+
 ## Controls (reading view)
 
 | State | Badge | Click |
