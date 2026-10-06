@@ -40,6 +40,6 @@ Known scope limits: reading view only (Live Preview would need a CodeMirror 6 `V
 ## Obsidian constraints
 
 - `minAppVersion` is `1.8.7` because `Notice.containerEl` is used; bump it (and `versions.json`) if newer APIs are adopted. Never change the manifest `id` or command IDs after release.
-- Release: `npm version <x.y.z>` runs `version-bump.mjs` to sync `manifest.json`/`versions.json`; pushing a tag with no `v` prefix triggers `.github/workflows/release.yml`, which drafts a GitHub release with `main.js`, `manifest.json`, `styles.css`.
+- Release: `npm version <x.y.z>` runs `version-bump.mjs` to sync `manifest.json`/`versions.json`; pushing a tag with no `v` prefix triggers `.github/workflows/release.yml`, which lints, builds and publishes a (non-draft) GitHub release with `main.js`, `manifest.json`, `styles.css` — BRAT installs from that latest published release, so drafts are invisible to it.
 - `isDesktopOnly: false` — avoid Node/Electron APIs. Register all listeners/intervals via `register*` helpers so unload is clean.
 - UI copy is sentence case (enforced by the obsidianmd lint rules).

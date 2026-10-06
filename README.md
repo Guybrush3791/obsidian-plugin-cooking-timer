@@ -33,6 +33,14 @@ When a countdown finishes, the alarm plays and a notice stays on screen until di
 
 Timers keep running when you switch notes or scroll away; state lives in memory and is lost when Obsidian restarts. Live Preview and source mode show the plain inline code.
 
+## Installation
+
+### Using BRAT
+
+1. Install the [BRAT](https://github.com/TfTHacker/obsidian42-brat) plugin.
+2. Go to **Settings → BRAT → Add Beta Plugin**.
+3. Enter `Guybrush3791/obsidian-plugin-cooking-timer` and click **Add Plugin**.
+
 ## Development
 
 With Nix + direnv, run `direnv allow` once to get Node 22 and npm from `flake/flake.nix`. Otherwise use Node ≥ 22.18.
